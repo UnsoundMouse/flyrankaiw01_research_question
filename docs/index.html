@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why Do Some Page-One Results Get Fewer Clicks Than Others? — A CTR Opportunity Model</title>
+<meta name="description" content="A CTR/engagement opportunity-scoring study on 30,000 pages: which pages under-capture clicks for their search position, and can that gap be ranked well enough to prioritize editorial review.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:      #EFF1EA;
+    --paper-alt:  #E7E9DF;
+    --ink:        #16202A;
+    --ink-soft:   #4A5560;
+    --line:       #D3D5C8;
+    --blue:       #35507A;
+    --blue-soft:  #DCE3EC;
+    --amber:      #C97A2B;
+    --amber-soft: #F2E3D0;
+    --green:      #3F7D58;
+    --grey-bar:   #8C95A8;
+    --max: 760px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', -apple-system, sans-serif;
+    font-size:17px;
+    line-height:1.65;
+  }
+  ::selection{background:var(--amber-soft);}
+  .wrap{max-width:var(--max); margin:0 auto; padding:0 24px;}
+  a{color:var(--blue);}
+  a:hover{color:var(--amber);}
+
+  /* ---------- hero ---------- */
+  .hero{
+    background:linear-gradient(180deg, var(--paper-alt) 0%, var(--paper) 100%);
+    border-bottom:1px solid var(--line);
+    padding:72px 0 48px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--blue);
+    margin-bottom:18px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(30px, 4.6vw, 46px);
+    line-height:1.14;
+    letter-spacing:-.01em;
+    margin:0 0 22px;
+  }
+  .abstract{
+    font-size:17.5px;
+    color:var(--ink-soft);
+    border-left:3px solid var(--amber);
+    padding-left:18px;
+    margin:0 0 6px;
+  }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px 18px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:26px;
+  }
+  .meta-row span{white-space:nowrap;}
+
+  /* ---------- signature: position ladder ---------- */
+  .ladder-section{padding:54px 0 10px;}
+  .ladder-caption{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:14px;
+  }
+  .ladder{display:flex; flex-direction:column; gap:9px; margin-top:26px;}
+  .rung{display:grid; grid-template-columns:96px 1fr 76px; align-items:center; gap:14px;}
+  .rung-label{font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--ink-soft); text-align:right;}
+  .rung-track{background:var(--paper-alt); border:1px solid var(--line); border-radius:3px; height:26px; position:relative; overflow:hidden;}
+  .rung-fill{height:100%; background:var(--blue); border-radius:2px 0 0 2px; width:0; animation:fillRung 1s cubic-bezier(.16,1,.3,1) forwards;}
+  .rung-fill.top{background:var(--amber);}
+  .rung-fill.w-100{--target:100%;} .rung-fill.w-24{--target:24%;} .rung-fill.w-12{--target:12%;}
+  .rung-fill.w-8{--target:8%;} .rung-fill.w-5{--target:5%;}
+  .rung:nth-child(1) .rung-fill{animation-delay:.12s;}
+  .rung:nth-child(2) .rung-fill{animation-delay:.21s;}
+  .rung:nth-child(3) .rung-fill{animation-delay:.30s;}
+  .rung:nth-child(4) .rung-fill{animation-delay:.39s;}
+  .rung:nth-child(5) .rung-fill{animation-delay:.48s;}
+  @keyframes fillRung{ to{ width:var(--target); } }
+  .rung-val{font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--ink); text-align:left;}
+
+  /* ---------- sections ---------- */
+  section{padding:48px 0;}
+  section + section{border-top:1px solid var(--line);}
+  .section-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--blue);
+    letter-spacing:.06em;
+    margin-bottom:8px;
+  }
+  h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:27px;
+    margin:0 0 18px;
+    letter-spacing:-.005em;
+  }
+  h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:19px;
+    margin:26px 0 10px;
+  }
+  p{margin:0 0 15px;}
+  ul, ol{margin:0 0 15px; padding-left:22px;}
+  li{margin-bottom:7px;}
+  strong{font-weight:600;}
+  code, .mono{font-family:'IBM Plex Mono', monospace; font-size:.92em; background:var(--paper-alt); padding:.12em .38em; border-radius:3px;}
+
+  .callout{
+    background:var(--blue-soft);
+    border-left:3px solid var(--blue);
+    padding:14px 18px;
+    border-radius:0 4px 4px 0;
+    margin:20px 0;
+    font-size:15.5px;
+  }
+  .callout.warn{background:var(--amber-soft); border-left-color:var(--amber);}
+
+  /* ---------- results table ---------- */
+  table{width:100%; border-collapse:collapse; margin:18px 0 8px; font-size:15px;}
+  th, td{text-align:left; padding:9px 10px; border-bottom:1px solid var(--line);}
+  th{font-family:'IBM Plex Mono', monospace; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); font-weight:500;}
+  td.num{font-family:'IBM Plex Mono', monospace;}
+  tr.win td{font-weight:600; color:var(--blue);}
+  .table-caption{font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink-soft); margin-top:6px;}
+
+  /* ---------- bar chart ---------- */
+  .chart-wrap{margin:22px 0 6px;}
+  .bars{display:flex; align-items:flex-end; gap:34px; height:180px; padding:0 4px;}
+  .bar-col{display:flex; flex-direction:column; align-items:center; flex:1; height:100%; justify-content:flex-end;}
+  .bar{width:100%; max-width:74px; border-radius:3px 3px 0 0; position:relative;}
+  .bar-label{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-soft); margin-top:8px; text-align:center;}
+  .bar-value{font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:500; margin-bottom:6px;}
+  .baseline-line{border-top:1.5px dashed var(--ink-soft); position:relative; margin-top:-1px;}
+
+  /* ---------- recommendations ---------- */
+  .rec{
+    display:grid; grid-template-columns:34px 1fr; gap:14px;
+    padding:14px 0; border-bottom:1px solid var(--line);
+  }
+  .rec:last-child{border-bottom:none;}
+  .rec-num{font-family:'Fraunces', serif; font-weight:600; font-size:22px; color:var(--blue);}
+  .rec-title{font-weight:600; margin-bottom:4px;}
+  .rec-code{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--amber); background:var(--amber-soft); padding:2px 7px; border-radius:3px; display:inline-block; margin-bottom:6px;}
+
+  /* ---------- footer / acknowledgments ---------- */
+  footer{
+    background:var(--ink);
+    color:#D8DCE2;
+    padding:44px 0 56px;
+  }
+  footer a{color:#B8CBE8;}
+  footer h2{color:#fff;}
+  footer .wrap{max-width:var(--max);}
+  .credit-line{
+    font-size:15.5px;
+    border-top:1px solid #33404E;
+    margin-top:26px;
+    padding-top:22px;
+    color:#9AA6B2;
+  }
+
+  @media (max-width:560px){
+    .rung{grid-template-columns:78px 1fr 62px; gap:8px;}
+    .bars{gap:16px;}
+    section{padding:36px 0;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .rung-fill{animation:none; width:var(--target);}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">CTR / Engagement Opportunity Scoring · FlyRank ML Internship Capstone</div>
+    <h1>Why do some page-one results get fewer clicks than others?</h1>
+    <p class="abstract">
+      We studied 30,000 pages across 32 clients to find pages that already rank well but
+      under-capture the clicks their position normally earns. Using a position-tier-adjusted
+      CTR gap as a proxy target and a client-grouped validation split, a Logistic Regression
+      model ranked genuine opportunity roughly <strong>1.7× more precisely</strong> than a
+      position-only baseline (precision@20: 0.85 vs. 0.50, base rate 0.44) — while a more
+      complex Random Forest model did <em>not</em> beat that same baseline. The result is a
+      reviewed, human-gated action queue, not an automated editing system.
+    </p>
+    <div class="meta-row">
+      <span>30,000 pages</span><span>·</span>
+      <span>32 clients</span><span>·</span>
+      <span>90-day snapshot</span><span>·</span>
+      <span>7-week build</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section class="ladder-section" aria-label="Position tier CTR ladder">
+    <h3 style="margin-top:0;">Click capture by position tier — the pattern the whole study is built on</h3>
+    <div class="ladder" id="ladder">
+      <div class="rung"><div class="rung-label">Top 3</div><div class="rung-track"><div class="rung-fill top w-100"></div></div><div class="rung-val">2.76%</div></div>
+      <div class="rung"><div class="rung-label">Page 1</div><div class="rung-track"><div class="rung-fill w-24"></div></div><div class="rung-val">0.65%</div></div>
+      <div class="rung"><div class="rung-label">Striking</div><div class="rung-track"><div class="rung-fill w-12"></div></div><div class="rung-val">0.32%</div></div>
+      <div class="rung"><div class="rung-label">Page 3-5</div><div class="rung-track"><div class="rung-fill w-8"></div></div><div class="rung-val">0.22%</div></div>
+      <div class="rung"><div class="rung-label">Deep</div><div class="rung-track"><div class="rung-fill w-5"></div></div><div class="rung-val">0.15%</div></div>
+    </div>
+    <div class="ladder-caption">Mean CTR by position tier, this study's 28,795 eligible pages. A single fixed CTR threshold cannot fairly compare pages across these tiers — the reason every score in this study is tier-relative, not absolute.</div>
+  </section>
+
+  <section id="intro">
+    <div class="section-num">01 — INTRODUCTION</div>
+    <h2>The decision this supports</h2>
+    <p>A content editor has limited time and a large portfolio. This study asks a narrow,
+    concrete question on their behalf: <strong>of all the pages already ranking somewhere
+    reasonable, which ones are quietly leaving clicks on the table — and which of those are
+    worth a title or meta-description rewrite first?</strong></p>
+    <p>A page sitting at position 4 with a CTR far below what other position-4 pages typically
+    achieve is a different problem than a page with no search demand at all. The first is a
+    metadata problem an editor can act on directly; the second usually isn't. This study builds,
+    validates, and honestly limits a system for telling the two apart.</p>
+    <p><strong>Cost of a wrong call:</strong> a false positive costs an editor's hour on a page
+    that was already fine. A false negative leaves real, already-earned traffic unclaimed on a
+    page that has the hard part — ranking, demand — already solved.</p>
+  </section>
+
+  <section id="data">
+    <div class="section-num">02 — DATA</div>
+    <h2>Data</h2>
+    <p>This study uses the FlyRank ML Internship starter release: a 90-day, single-snapshot
+    slice of <strong>30,000 pages across 32 pseudonymous clients</strong>
+    (<code>content_refresh_anonymized.csv</code>). A larger warehouse release (79M rows, 104
+    clients, 17 months, access-gated) exists and was explored for data-contract practice, but
+    every model and figure in this paper uses the starter slice, for direct comparability across
+    every stage of the build.</p>
+    <h3>Deliberately excluded</h3>
+    <ul>
+      <li><strong>Client and content IDs</strong> — pseudonymous grouping keys only, never
+      model features.</li>
+      <li><strong>Trend-derived columns</strong> (30-day trend percentage and direction) —
+      computed downstream of the same signal this study's label is built from; using them as
+      features would let a model read the answer.</li>
+      <li><strong>Rows with <code>avg_position == 0</code></strong> — this value means "no
+      position data," not rank zero, and silently files under the best tier label if not
+      filtered out first.</li>
+    </ul>
+    <div class="callout">No client names, domains, URLs, or private search query text appear
+    anywhere in this study, its notebooks, or its outputs.</div>
+  </section>
+
+  <section id="method">
+    <div class="section-num">03 — METHODOLOGY</div>
+    <h2>Methodology</h2>
+    <h3>Target</h3>
+    <p><code>underperforms</code> = 1 if a page's CTR sits below its own position tier's median
+    CTR, computed on pages with real, visible traffic (≥500 impressions/90 days). This is a
+    <strong>proxy</strong>, not an observed future outcome — the data is a single snapshot, so
+    there is no genuine before/after window to validate against. Every claim in this paper
+    respects that limit.</p>
+    <h3>Population</h3>
+    <p><code>impressions_90d ≥ 500</code> and <code>avg_position ≤ 20</code> — enough traffic to
+    trust a CTR comparison, and close enough to page one that a snippet edit is realistic. This
+    pool holds 12,023 pages.</p>
+    <h3>Features</h3>
+    <p>Position, word count, content age, days since last update, engagement rate, scroll rate,
+    AI-traffic share, content type, search intent, and freshness tier — never CTR, clicks, or
+    anything the label is computed from.</p>
+    <h3>Baseline</h3>
+    <p>Ranking by position alone (best position first) — the one signal the original rule-based
+    approach can offer without seeing CTR directly, which is what makes it a fair thing for a
+    model to be measured against.</p>
+    <h3>Validation design</h3>
+    <p>Client-grouped split (75/25) — no client's pages appear in both train and test. A
+    same-task comparison against a plain random split showed only a small gap here (precision@20:
+    0.86 random vs. 0.85 grouped) — page-level features vary enough within one client's own
+    portfolio that client memorization wasn't the dominant risk for this particular task. That
+    finding is specific to this task; it isn't assumed to generalize automatically.</p>
+    <h3>Leakage checks</h3>
+    <p>A first pass included a session-count feature and produced a suspiciously high score.
+    Permutation importance flagged it as dominant; its correlation with the click count used to
+    build the label was 0.83 — a near-duplicate signal, not an independent one. It was removed.
+    Every result below is the honest, post-removal number.</p>
+  </section>
+
+  <section id="results">
+    <div class="section-num">04 — RESULTS</div>
+    <h2>Results, model vs. baseline</h2>
+    <p>Held-out test set: 824 pages, base rate 0.439 (i.e. a coin-flip-adjacent share of the
+    pool genuinely underperforms its tier — worth stating plainly, since a high score means
+    little without this number beside it).</p>
+
+    <table>
+      <tr><th>Method</th><th>precision@20</th><th>precision@50</th></tr>
+      <tr><td>Baseline (position-only)</td><td class="num">0.50</td><td class="num">0.48</td></tr>
+      <tr class="win"><td>Logistic Regression</td><td class="num">0.85</td><td class="num">0.72</td></tr>
+      <tr><td>Random Forest</td><td class="num">0.45</td><td class="num">0.56</td></tr>
+    </table>
+    <div class="table-caption">precision@K = share of the model's top-K ranked pages that were genuinely underperforming, on held-out clients never seen in training.</div>
+
+    <div class="chart-wrap">
+      <div class="bars">
+        <div class="bar-col">
+          <div class="bar-value">0.50</div>
+          <div class="bar" style="height:58%; background:var(--grey-bar);"></div>
+          <div class="bar-label">Baseline</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">0.85</div>
+          <div class="bar" style="height:100%; background:var(--blue);"></div>
+          <div class="bar-label">Logistic<br>Regression</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value">0.45</div>
+          <div class="bar" style="height:53%; background:var(--amber);"></div>
+          <div class="bar-label">Random<br>Forest</div>
+        </div>
+      </div>
+      <div class="table-caption">precision@20, held-out grouped split. Dashed reference is the 0.439 base rate.</div>
+    </div>
+
+    <p><strong>Logistic Regression clearly wins</strong> — roughly 1.7× the baseline at K=20.
+    <strong>Random Forest does not</strong> — it falls slightly <em>below</em> the position-only
+    baseline at K=20, a direct example of not rewarding model complexity on its own.</p>
+
+    <h3>What the model leans on</h3>
+    <p>Permutation importance on the honest feature set: <code>engagement_rate</code> leads
+    clearly (≈0.15), well ahead of <code>content_age_days</code> (≈0.03) and every other
+    feature. Its correlation with CTR (0.08) and click count (0.02) is low — unlike the removed
+    session-count feature's 0.83 — so this looks like a genuinely separate signal, not a
+    disguised copy of the label.</p>
+  </section>
+
+  <section id="limits">
+    <div class="section-num">05 — LIMITATIONS</div>
+    <h2>Limitations &amp; honest framing</h2>
+    <ul>
+      <li><strong>Not causal.</strong> Cross-sectional, single-window data, no experiment. This
+      study never claims a rewrite <em>will</em> raise CTR — only that certain pages look worth
+      reviewing first.</li>
+      <li><strong>Proxy label, not an observed outcome.</strong> The label is defined from the
+      same window as every feature; this ranks current relative standing, not future
+      trajectory.</li>
+      <li><strong>An intent bias, found and disclosed, not hidden.</strong> Commercial and
+      transactional pages are compared against a tier median dominated by informational pages,
+      and get over-flagged as a result. They're routed to human review rather than direct
+      action specifically because of this.</li>
+      <li><strong>A small, single-month slice.</strong> 30,000 rows, 32 clients, one snapshot —
+      not yet confirmed against the full 79-million-row, 17-month warehouse.</li>
+      <li><strong>External consistency, not proof.</strong> FlyRank's own March 2026 portfolio
+      report (341,701 pages, 57 brands) independently found the same directional pattern —
+      weighted CTR falling from 0.423% (top 3) to 0.050% (deep) — using a different, portfolio-
+      weighted calculation. The direction matches; the absolute numbers aren't expected to, and
+      shouldn't be read as validating each other's magnitude.</li>
+    </ul>
+    <div class="callout warn">All claims in this paper follow a fixed ladder: <strong>observed</strong>
+    (a fact about this snapshot) → <strong>directional</strong> (a pattern, not a guarantee) →
+    <strong>decision-support</strong> (input to a human decision, never the decision itself).
+    Nothing here reaches the next rung — a causal claim — because no experiment was run.</div>
+  </section>
+
+  <section id="recs">
+    <div class="section-num">06 — RANKED RECOMMENDATIONS</div>
+    <h2>The action playbook</h2>
+    <p>Every action below requires human review before publishing. Nothing in this system is
+    approved for direct automated edits.</p>
+
+    <div class="rec">
+      <div class="rec-num">1</div>
+      <div><div class="rec-code">rewrite_title_meta</div>
+      <div class="rec-title">High model score, non-commercial intent</div>
+      <p style="margin:0;">Direct title/meta review — the model's strongest, least-caveated signal.</p></div>
+    </div>
+    <div class="rec">
+      <div class="rec-num">2</div>
+      <div><div class="rec-code">review_before_rewrite</div>
+      <div class="rec-title">High score, commercial/transactional intent</div>
+      <p style="margin:0;">Human review first — this segment carries the known intent bias from the limitations above.</p></div>
+    </div>
+    <div class="rec">
+      <div class="rec-num">3</div>
+      <div><div class="rec-code">schedule_refresh_review</div>
+      <div class="rec-title">Content age 271–365 days</div>
+      <p style="margin:0;">Proactive refresh review, ahead of the CTR signal showing up — the decay-cliff window FlyRank's own portfolio report also identifies.</p></div>
+    </div>
+    <div class="rec">
+      <div class="rec-num">4</div>
+      <div><div class="rec-code">monitor_only</div>
+      <div class="rec-title">Borderline score</div>
+      <p style="margin:0;">Watch, no action yet — revisit on the next scoring pass.</p></div>
+    </div>
+    <div class="rec">
+      <div class="rec-num">5</div>
+      <div><div class="rec-code">no_action</div>
+      <div class="rec-title">Low score</div>
+      <p style="margin:0;">Not flagged this round — means "not flagged," not "confirmed healthy."</p></div>
+    </div>
+
+    <h3>What should never be automated</h3>
+    <ul>
+      <li>No auto-published title/meta edits, ever.</li>
+      <li>Nothing below the 500-impression eligibility floor — too little signal to trust.</li>
+      <li><code>model_score</code> is never a probability that an edit <em>will</em> work.</li>
+      <li>Never applied outside this lane (CTR/engagement) — it says nothing about technical
+      SEO, backlinks, or content accuracy.</li>
+    </ul>
+  </section>
+
+  <section id="repro">
+    <div class="section-num">07 — REPRODUCIBILITY</div>
+    <h2>Reproducibility</h2>
+    <p>Every number in this paper traces back to a committed notebook, in order:</p>
+    <ul>
+      <li><code>work/notebooks/w01_research_question.ipynb</code> — lane framing, first real numbers</li>
+      <li><code>work/notebooks/w02_ml_task_framing.ipynb</code> — task type, proxy target, grain probe</li>
+      <li><code>work/notebooks/w03_data_contract.ipynb</code> — warehouse contract, verification queries</li>
+      <li><code>work/notebooks/w04_baseline_score.ipynb</code> — the position-only baseline, signal checks</li>
+      <li><code>work/notebooks/w05_model.ipynb</code> — Logistic Regression / Random Forest, the leakage catch</li>
+      <li><code>work/notebooks/w06_validation_audit.ipynb</code> — random-vs-grouped split, claim rewrite</li>
+      <li><code>work/notebooks/w07_action_playbook.ipynb</code> — the action queue and export</li>
+      <li><code>work/notebooks/capstone.ipynb</code> — this paper's exact source, end to end</li>
+    </ul>
+    <p>Random seed <code>42</code> throughout. Rerun from a fresh clone: open any notebook in
+    Colab and run all cells top to bottom — each one loads the same public starter CSV directly
+    from this repo.</p>
+    <p><a href="https://github.com/UnsoundMouse/flyrankaiw01_research_question" target="_blank" rel="noopener">→ Full repository on GitHub</a></p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="section-num" style="color:#8FA6C4;">08 — ACKNOWLEDGMENTS</div>
+    <h2>Acknowledgments</h2>
+    <p>Thanks to the FlyRank ML Internship program for the structured, weekly framework this
+    study was built inside — from research-question framing through leakage auditing to this
+    deployed writeup.</p>
+    <p class="credit-line">Built on the FlyRank ML Internship dataset —
+    <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
